@@ -42,7 +42,7 @@ updated the copy to is the copy it takes over.
 
 ## Requirements
 
-- macOS 26.5 (Tahoe) or later
+- macOS 15 (Sequoia) or later
 - Apple Silicon (`arm64`)
 
 ## Updates
