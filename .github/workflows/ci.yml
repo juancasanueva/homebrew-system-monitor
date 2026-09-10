@@ -58,6 +58,8 @@ jobs:
         run: brew style juancasanueva/system-monitor
 
       - name: Audit, offline
+        env:
+          HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
         run: brew audit --cask juancasanueva/system-monitor/system-monitor
 
       - name: Audit, online and strict
@@ -68,6 +70,8 @@ jobs:
         # `--new` is deliberately absent. It enforces homebrew/cask *submission*
         # house rules that a third-party tap is entitled to ignore, and this tap
         # is the channel precisely because submission is deferred.
+        env:
+          HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
         run: brew audit --cask --online --strict juancasanueva/system-monitor/system-monitor
 
       - name: Install

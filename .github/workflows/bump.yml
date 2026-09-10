@@ -123,6 +123,10 @@ jobs:
 
       - name: Gate the rewrite before anything is committed
         if: steps.guard.outputs.bump == 'yes'
+        env:
+          # Homebrew's own GitHub API calls during `brew audit --online` are
+          # anonymous otherwise, and shared runners exhaust that limit.
+          HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           # A push made with GITHUB_TOKEN does not trigger other workflows, so
