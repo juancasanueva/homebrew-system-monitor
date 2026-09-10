@@ -14,15 +14,15 @@ cask "system-monitor" do
   end
 
   auto_updates true
-  depends_on macos: :sequoia
   depends_on arch: :arm64
+  depends_on macos: :sequoia
 
   app "System-Monitor.app"
 
   zap trash: [
     "~/Library/Application Support/com.juancasanueva.system-monitor",
-    "~/Library/Containers/com.juancasanueva.system-monitor",
     "~/Library/Caches/com.juancasanueva.system-monitor",
+    "~/Library/Containers/com.juancasanueva.system-monitor",
     "~/Library/HTTPStorages/com.juancasanueva.system-monitor",
     "~/Library/Preferences/com.juancasanueva.system-monitor.plist",
   ]
