@@ -6,8 +6,8 @@ lightweight CPU, memory, disk and network monitor for the macOS menu bar.
 ## Install
 
 ```sh
-brew tap juancasanueva/system-monitor
 brew trust juancasanueva/system-monitor
+brew tap juancasanueva/system-monitor
 brew install --cask system-monitor
 ```
 
@@ -15,8 +15,8 @@ That installs `/Applications/System-Monitor.app` — the same notarized, stapled
 [Releases](https://github.com/juancasanueva/SWIFTUI_system_monitor/releases) page serves. The bundle is named
 `System-Monitor.app` in both channels.
 
-Homebrew 6 refuses to load a cask from a non-official tap until the tap is trusted, which is what the
-middle line does. It grants nothing beyond this tap, and you can undo it with
+Homebrew 6 refuses to load, and since 6.0.22 even to tap, a non-official tap that carries a cask until the
+tap is trusted, which is what the first line does. It grants nothing beyond this tap, and you can undo it with
 `brew untrust juancasanueva/system-monitor`.
 
 If another tap ever claims the `system-monitor` token, this fully-qualified form is unambiguous — and
