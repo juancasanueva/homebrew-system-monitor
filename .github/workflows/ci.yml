@@ -1,8 +1,9 @@
 name: CI
 
-# Every gate this tap has. A cask that installs is the only proof that a cask
-# installs, so the round trip runs on a real runner rather than being argued for
-# in a review.
+# This tap is a migration pointer, not a cask channel. The only thing left to
+# check is that the pointer is well-formed and that no cask or formula has crept
+# back in — `brew audit` errors on a token that is both listed in
+# tap_migrations.json and still present in the tap that lists it.
 
 on:
   pull_request:
@@ -17,78 +18,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  cask:
-    runs-on: macos-26
-    timeout-minutes: 30
+  pointer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - name: Check out the tap
-        uses: actions/checkout@v5
-        with:
-          path: homebrew-system-monitor
+      - uses: actions/checkout@v5
 
-      - name: Record the runner image
+      - name: The migration is valid JSON and points at juancasanueva/tap
         run: |
           set -euo pipefail
-          sw_vers
-          brew --version
-          uname -m
-          # `depends_on arch: :arm64` makes the install step unreachable on an
-          # Intel image, and an unreachable gate that reports success is worse
-          # than no gate. So the architecture is asserted, not assumed.
-          test "$(uname -m)" = "arm64"
+          jq empty tap_migrations.json
+          test "$(jq -r '."system-monitor"' tap_migrations.json)" = "juancasanueva/tap"
 
-      - name: Register the checkout as a real tap
+      - name: The tap ships no package of its own
         run: |
           set -euo pipefail
-          # `brew style` and `brew audit` behave differently against a loose
-          # `.rb` path than against a tapped cask, and the loose path is the
-          # known source of "passes in CI, fails for a user".
-          #
-          # A copy, not `brew tap juancasanueva/system-monitor "$GITHUB_WORKSPACE/..."`:
-          # that form git-clones the checkout, and a clone resolves the source's
-          # HEAD, which `actions/checkout` leaves detached. CI would then audit a
-          # second resolution of the commit instead of the exact bytes under
-          # review.
-          TAPS="$(brew --repository)/Library/Taps/juancasanueva"
-          mkdir -p "$TAPS"
-          cp -R "$GITHUB_WORKSPACE/homebrew-system-monitor" "$TAPS/homebrew-system-monitor"
-          brew tap
-
-      - name: Style
-        run: brew style juancasanueva/system-monitor
-
-      - name: Audit, offline
-        env:
-          HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
-        run: brew audit --cask juancasanueva/system-monitor/system-monitor
-
-      - name: Audit, online and strict
-        # The gate that matters: it downloads the url and verifies the declared
-        # sha256 against the bytes GitHub actually serves, which is the one
-        # failure a user would otherwise meet first.
-        #
-        # `--new` is deliberately absent. It enforces homebrew/cask *submission*
-        # house rules that a third-party tap is entitled to ignore, and this tap
-        # is the channel precisely because submission is deferred.
-        env:
-          HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
-        run: brew audit --cask --online --strict juancasanueva/system-monitor/system-monitor
-
-      - name: Install
-        run: |
-          set -euo pipefail
-          brew install --cask juancasanueva/system-monitor/system-monitor
-          test -d "/Applications/System-Monitor.app"
-          /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" \
-            "/Applications/System-Monitor.app/Contents/Info.plist"
-
-      - name: Uninstall with a zap
-        run: |
-          set -euo pipefail
-          # The zap paths are only syntactically exercised here — a runner has
-          # never launched the app, so it has nothing to delete. What this
-          # proves is that the stanza is well-formed and that the uninstall
-          # completes, not that the inventory is complete. Completeness is
-          # bound to the source by CaskZapInventoryTests in the app repository.
-          brew uninstall --cask --zap juancasanueva/system-monitor/system-monitor
-          test ! -d "/Applications/System-Monitor.app"
+          test ! -d Casks
+          test ! -d Formula

@@ -1,88 +1,51 @@
 # homebrew-system-monitor
 
-The Homebrew tap for [System Monitor](https://github.com/juancasanueva/SWIFTUI_system_monitor), a
-lightweight CPU, memory, disk and network monitor for the macOS menu bar.
+**This tap has moved.** [System Monitor](https://github.com/juancasanueva/SWIFTUI_system_monitor) now
+ships from `juancasanueva/tap`, together with
+[Home Cellar](https://github.com/juancasanueva/SWIFTUI_cellar) — one tap, one trust grant, one
+`brew upgrade` for both.
 
-## Install
+Nothing is served from here any more. The cask file is gone and a `tap_migrations.json` at the root
+sends the `system-monitor` token to the new tap.
+
+## New here?
 
 ```sh
-brew trust juancasanueva/system-monitor
-brew tap juancasanueva/system-monitor
+brew trust juancasanueva/tap
+brew tap juancasanueva/tap
 brew install --cask system-monitor
 ```
 
-That installs `/Applications/System-Monitor.app` — the same notarized, stapled build the project's
-[Releases](https://github.com/juancasanueva/SWIFTUI_system_monitor/releases) page serves. The bundle is named
-`System-Monitor.app` in both channels.
+The fully-qualified form, `brew install --cask juancasanueva/tap/system-monitor`, is unambiguous if
+another tap ever claims the token — and naming the tap on the command line is itself the grant, so it
+needs no `brew trust` at all.
 
-Homebrew 6 refuses to load, and since 6.0.22 even to tap, a non-official tap that carries a cask until the
-tap is trusted, which is what the first line does. It grants nothing beyond this tap, and you can undo it with
-`brew untrust juancasanueva/system-monitor`.
+See the [new tap's README](https://github.com/juancasanueva/homebrew-tap) for adoption of an existing
+`/Applications/System-Monitor.app`, uninstall, zap and the rest.
 
-If another tap ever claims the `system-monitor` token, this fully-qualified form is unambiguous — and
-naming the tap on the command line is itself the grant, so it needs no `brew trust` at all:
+## Already installed from this tap?
 
-```sh
-brew install --cask juancasanueva/system-monitor/system-monitor
-```
-
-### Already have `System-Monitor.app` in `/Applications`?
-
-Homebrew refuses to overwrite an app it did not place, so a copy installed from the zip stops the
-plain install with `It seems there is already an App at '/Applications/System-Monitor.app'`. Let brew
-adopt the existing copy instead:
+Three commands finish the move:
 
 ```sh
-brew install --cask --adopt system-monitor
+brew trust juancasanueva/tap
+brew tap juancasanueva/tap
+brew upgrade
 ```
 
-Adoption keeps the bundle and its data where they are and records it as brew-managed. Because the
-cask declares `auto_updates`, brew does not compare versions before adopting — whatever Sparkle has
-updated the copy to is the copy it takes over.
+The trust grant and the tap have to come first. `brew upgrade` follows the migration into a tap you
+already have, but it will not add a tap for you, and Homebrew will not load a cask from an untrusted
+third-party tap — so a bare `brew upgrade` without those two lines simply does nothing.
 
-## Requirements
-
-- macOS 15 (Sequoia) or later
-- Apple Silicon (`arm64`)
-
-## Updates
-
-System Monitor updates itself with [Sparkle](https://sparkle-project.org) from an EdDSA-signed appcast, so the
-cask declares `auto_updates true`. Homebrew will not report a self-updated copy as outdated and will
-not reinstall over it. `brew upgrade` and System Monitor's own updater do not fight.
-
-## Uninstall
+Once `brew info --cask system-monitor` reports `From: https://github.com/juancasanueva/homebrew-tap/...`, this tap has no further job:
 
 ```sh
-brew uninstall --cask system-monitor
+brew untap juancasanueva/system-monitor
 ```
 
-To remove System Monitor's caches, local data and preferences as well:
-
-```sh
-brew uninstall --cask --zap system-monitor
-```
-
-**A zap cannot remove Keychain items.** Homebrew's uninstall has no Keychain facility, so these two
-generic-password items survive it, and they are the only things that do:
-
-- `com.juancasanueva.system-monitor.nvd-api-key`
-- `com.juancasanueva.system-monitor.github-pat`
-
-Both exist only if you supplied those optional credentials. Delete them in **Keychain Access** if you
-want them gone.
-
-Untapping or deleting this tap does **not** uninstall anything. An installed copy keeps working and
-keeps updating itself through Sparkle; it simply stops being managed by `brew`.
-
-## How this tap stays current
-
-`.github/workflows/bump.yml` reads the app repository's latest published release four times a day,
-downloads the published asset, computes its checksum from those bytes, and commits the two-line bump
-only after `brew style` and `brew audit --cask --online --strict` both pass. It makes no commit when
-the cask already declares the published version, so at most one commit exists per release. The app
-repository sends nothing to this one and holds no credential for it.
+Untapping does **not** uninstall anything, and nothing about the installed app changes. The migration
+rebinds which tap owns the token, not the bundle on disk.
 
 ## Licence
 
-MIT, the same licence as the app. A cask is a build recipe, not the application.
+MIT, the same licence as the app.
